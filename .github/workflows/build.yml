@@ -50,3 +50,21 @@ jobs:
         name: ${{ matrix.platform.target }}
         path: nc-url-opener-${{ matrix.platform.target }}.zip
         retention-days: 10
+
+  publish:
+    needs: [build]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: html/downloads
+      
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: html
