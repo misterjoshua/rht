@@ -49,4 +49,4 @@ jobs:
       with:
         name: ${{ matrix.platform.target }}
         path: nc-url-opener-${{ matrix.platform.target }}.zip
-        rention-days: 10
+        retention-days: 10
