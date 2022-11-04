@@ -5,12 +5,12 @@ your terminal doesn't support xdg-open.
 
 ## `nc-open-url` downloads
 
-- [x86_64-pc-windows-gnu](https://misterjoshua.github.io/nc-url-opener/nc-url-opener-x86_64-pc-windows-gnu.zip)
-- [x86_64-unknown-linux-gnu](https://misterjoshua.github.io/nc-url-opener/nc-url-opener-x86_64-unknown-linux-gnu.zip)
-- [x86_64-unknown-linux-musl](https://misterjoshua.github.io/nc-url-opener/nc-url-opener-x86_64-unknown-linux-musl.zip)
-- [arm-unknown-linux-gnueabi](https://misterjoshua.github.io/nc-url-opener/nc-url-opener-arm-unknown-linux-gnueabi.zip)
-- [armv7-unknown-linux-gnueabihf](https://misterjoshua.github.io/nc-url-opener/nc-url-opener-armv7-unknown-linux-gnueabihf.zip)
-- [aarch64-unknown-linux-gnu](https://misterjoshua.github.io/nc-url-opener/nc-url-opener-aarch64-unknown-linux-gnu.zip)
+- [x86_64-pc-windows-gnu](https://misterjoshua.github.io/nc-url-opener/downloads/nc-url-opener-x86_64-pc-windows-gnu.zip)
+- [x86_64-unknown-linux-gnu](https://misterjoshua.github.io/nc-url-opener/downloads/nc-url-opener-x86_64-unknown-linux-gnu.zip)
+- [x86_64-unknown-linux-musl](https://misterjoshua.github.io/nc-url-opener/downloads/nc-url-opener-x86_64-unknown-linux-musl.zip)
+- [arm-unknown-linux-gnueabi](https://misterjoshua.github.io/nc-url-opener/downloads/nc-url-opener-arm-unknown-linux-gnueabi.zip)
+- [armv7-unknown-linux-gnueabihf](https://misterjoshua.github.io/nc-url-opener/downloads/nc-url-opener-armv7-unknown-linux-gnueabihf.zip)
+- [aarch64-unknown-linux-gnu](https://misterjoshua.github.io/nc-url-opener/downloads/nc-url-opener-aarch64-unknown-linux-gnu.zip)
 
 
 ## Usage
