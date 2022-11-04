@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 use clap::Parser;
 use actix_web::{post,Responder,HttpResponse};
 use log::{info};
