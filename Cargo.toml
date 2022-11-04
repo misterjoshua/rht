@@ -1,6 +1,6 @@
 [package]
 name = "nc-url-opener"
-version = "0.2.2"
+version = "0.3.0"
 edition = "2021"
 
 [dependencies]
@@ -9,4 +9,5 @@ anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 env_logger = "0.9"
 log = "0.4"
+reqwest = "0.11"
 url = "2"
