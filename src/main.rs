@@ -2,7 +2,7 @@
 
 use clap::Parser;
 use actix_web::{post,Responder,HttpResponse};
-use log::{info};
+use log::info;
 
 #[post("/open")]
 async fn open(url: String) -> impl Responder {
@@ -22,8 +22,8 @@ async fn open_url(url: &str) -> Result<(), anyhow::Error> {
     let url = url::Url::parse(url)?;
 
     if cfg!(target_os = "windows") {
-        std::process::Command::new("start")
-            .args([url.as_str()])
+        std::process::Command::new("cmd")
+            .args(["/C", "start", url.as_str()])
             .output()?;
     } else {
         std::process::Command::new("xdg-open")
