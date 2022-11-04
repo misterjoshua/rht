@@ -67,7 +67,13 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
-          path: html/downloads
+          path: tmp
+
+      - name: Starge artifacts
+        run: |
+          mkdir -p html/downloads
+          mv tmp/*/*.zip html/downloads/
+          find html
       
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
