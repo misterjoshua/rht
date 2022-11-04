@@ -73,7 +73,7 @@ jobs:
         run: |
           mkdir -p html/downloads
           mv tmp/*/*.zip html/downloads/
-          find html
+          find html/downloads -type f | sed -re 's#html/(.*)#<a href="\1">\1</a><br />#' >html/index.html
       
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
