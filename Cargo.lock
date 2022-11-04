@@ -866,6 +866,7 @@ dependencies = [
  "clap",
  "env_logger",
  "log",
+ "openssl",
  "reqwest",
  "url",
 ]
