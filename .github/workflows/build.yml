@@ -1,0 +1,52 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        platform:
+          - { target: aarch64-unknown-linux-gnu, binary: nc-url-opener }
+          - { target: armv7-unknown-linux-gnueabihf, binary: nc-url-opener }
+          - { target: arm-unknown-linux-gnueabi, binary: nc-url-opener }
+          - { target: x86_64-unknown-linux-gnu, binary: nc-url-opener }
+          - { target: x86_64-unknown-linux-musl, binary: nc-url-opener }
+          - { target: x86_64-pc-windows-gnu, binary: nc-url-opener.exe }
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.platform.target }}
+
+    - name: Build platform
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: true
+        command: build
+        args: --release --target ${{ matrix.platform.target }}
+
+    - name: Package Zip
+      run: zip nc-url-opener-${{ matrix.platform.target }}.zip target/${{ matrix.platform.target }}/release/${{ matrix.platform.binary }}
+
+    - name: Upload Zip
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.platform.target }}
+        path: nc-url-opener-${{ matrix.platform.target }}.zip
+        rention-days: 10

@@ -1,8 +1,12 @@
 [package]
-name = "multiplatrs"
-version = "0.1.0"
+name = "nc-url-opener"
+version = "0.2.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+actix-web = "4"
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+env_logger = "0.9.1"
+log = "0.4.17"
+url = "2"
