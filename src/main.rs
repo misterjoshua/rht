@@ -1,11 +1,11 @@
 #![windows_subsystem = "windows"]
 
+use actix_web::{post, HttpResponse, Responder};
+use anyhow::anyhow;
 use clap::Parser;
-use actix_web::{post,Responder,HttpResponse};
 use log::info;
 use reqwest::StatusCode;
 use url::Url;
-use anyhow::anyhow;
 
 /// A web server that opens local web browsers.
 #[derive(Parser, Debug)]
@@ -16,7 +16,7 @@ struct Args {
 
     /// Listen on an address/port.
     #[arg(short, long, default_value_t = String::from("127.0.0.1:12345"))]
-    listen: String
+    listen: String,
 }
 
 #[forbid(unsafe_code)]
@@ -36,9 +36,9 @@ async fn client(url: &str, listen: &str) -> Result<(), anyhow::Error> {
 
     let url = Url::parse(url)?;
     info!("Opening url: {}", url);
-    
+
     let server_url = Url::parse(&format!("http://{}/open", listen))?;
-    
+
     let res = Client::new()
         .post(server_url)
         .body(url.to_string())
@@ -47,24 +47,20 @@ async fn client(url: &str, listen: &str) -> Result<(), anyhow::Error> {
 
     match res.status() {
         StatusCode::OK => Ok(()),
-        _ => Err(anyhow!("Bad HTTP code: {}", res.status()))
+        _ => Err(anyhow!("Bad HTTP code: {}", res.status())),
     }
 }
 
 async fn server(args: &Args) -> Result<(), anyhow::Error> {
-    use actix_web::{HttpServer,App,middleware::Logger};
+    use actix_web::{middleware::Logger, App, HttpServer};
 
     info!("Listening on http://{}", args.listen);
 
-    HttpServer::new(|| {
-        App::new()
-            .wrap(Logger::default())
-            .service(open)
-    })
+    HttpServer::new(|| App::new().wrap(Logger::default()).service(open))
         .bind(&args.listen)?
         .run()
         .await?;
-    
+
     Ok(())
 }
 
@@ -72,14 +68,8 @@ async fn server(args: &Args) -> Result<(), anyhow::Error> {
 async fn open(url: String) -> impl Responder {
     open_url(&url)
         .await
-        .map(|_| {
-            HttpResponse::Ok()
-                .body(format!("Accepted url: {}\n", url))
-        })
-        .unwrap_or_else(|error| {
-            HttpResponse::BadRequest()
-                .body(format!("Error: {}\n", error))
-        })
+        .map(|_| HttpResponse::Ok().body(format!("Accepted url: {}\n", url)))
+        .unwrap_or_else(|error| HttpResponse::BadRequest().body(format!("Error: {}\n", error)))
 }
 
 async fn open_url(url: &str) -> Result<(), anyhow::Error> {
