@@ -13,9 +13,6 @@ Now, connect to another host and open a browser remotely:
 # SSH in to a server with an SSH tunnel
 desktop$ ssh server -R 12345:127.0.0.1:12345
 
-# From the server, use curl to open a browser on your desktop.
-server$ curl http://127.0.0.1:12345/open -X POST --data https://www.example.com
-
 # Use the binary to open the url on your desktop; or
 server$ rhc open https://www.example.com
 
