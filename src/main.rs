@@ -1,4 +1,4 @@
-mod rhcli;
+mod rht;
 
 use axum::{extract::Json, http::StatusCode, response::IntoResponse, routing::post, Router};
 use clap::{Parser, Subcommand};
@@ -45,8 +45,8 @@ async fn main() -> Result<(), anyhow::Error> {
     match command {
         Commands::Open(x) => {
             let api_url = format!("http://{}/open", listener).parse()?;
-            rhcli::json_api::JsonApi::new(api_url)
-                .post(rhcli::open::OpenRequest::new(x.url.as_str()))
+            rht::json_api::JsonApi::new(api_url)
+                .post(rht::open::OpenRequest::new(x.url.as_str()))
                 .await?;
         }
         Commands::Serve => {
@@ -59,8 +59,8 @@ async fn main() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-async fn open(Json(req): Json<rhcli::open::OpenRequest>) -> impl IntoResponse {
-    match rhcli::open::open(&req).await {
+async fn open(Json(req): Json<rht::open::OpenRequest>) -> impl IntoResponse {
+    match rht::open::open(&req).await {
         Ok(x) => (StatusCode::OK, Json(x)).into_response(),
         Err(_) => (StatusCode::BAD_REQUEST).into_response(),
     }

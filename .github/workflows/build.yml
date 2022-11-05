@@ -12,12 +12,12 @@ jobs:
     strategy:
       matrix:
         platform:
-          - { target: aarch64-unknown-linux-gnu, binary: nc-url-opener }
-          - { target: armv7-unknown-linux-gnueabihf, binary: nc-url-opener }
-          - { target: arm-unknown-linux-gnueabi, binary: nc-url-opener }
-          - { target: x86_64-unknown-linux-gnu, binary: nc-url-opener }
-          - { target: x86_64-unknown-linux-musl, binary: nc-url-opener }
-          - { target: x86_64-pc-windows-gnu, binary: nc-url-opener.exe }
+          - { target: aarch64-unknown-linux-gnu, binary: rht }
+          - { target: armv7-unknown-linux-gnueabihf, binary: rht }
+          - { target: arm-unknown-linux-gnueabi, binary: rht }
+          - { target: x86_64-unknown-linux-gnu, binary: rht }
+          - { target: x86_64-unknown-linux-musl, binary: rht }
+          - { target: x86_64-pc-windows-gnu, binary: rht.exe }
 
     runs-on: ubuntu-latest
 
@@ -47,13 +47,13 @@ jobs:
         args: --release --target ${{ matrix.platform.target }}
 
     - name: Package zip
-      run: (cd target/${{ matrix.platform.target }}/release && zip - ${{ matrix.platform.binary }}) >nc-url-opener-${{ matrix.platform.target }}.zip
+      run: (cd target/${{ matrix.platform.target }}/release && zip - ${{ matrix.platform.binary }}) >rht-${{ matrix.platform.target }}.zip
 
     - name: Upload zip
       uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.platform.target }}
-        path: nc-url-opener-${{ matrix.platform.target }}.zip
+        path: rht-${{ matrix.platform.target }}.zip
         retention-days: 10
 
   publish:
