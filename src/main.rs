@@ -1,89 +1,67 @@
-#![windows_subsystem = "windows"]
+mod rhcli;
 
-use actix_web::{post, HttpResponse, Responder};
-use anyhow::anyhow;
-use clap::Parser;
-use log::info;
-use reqwest::StatusCode;
-use url::Url;
+use axum::{extract::Json, http::StatusCode, response::IntoResponse, routing::post, Router};
+use clap::{Parser, Subcommand};
 
-/// A web server that opens local web browsers.
+/// The default listener address
+const LISTENER: &str = "127.0.0.1:12345";
+
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
-struct Args {
-    /// Open a url. When omitted, this tool runs a server.
-    url: Option<String>,
+#[command(propagate_version = true)]
+struct CliArgs {
+    #[command(subcommand)]
+    command: Option<Commands>,
 
     /// Listen on an address/port.
-    #[arg(short, long, default_value_t = String::from("127.0.0.1:12345"))]
-    listen: String,
+    #[arg(short, long, default_value_t = String::from(LISTENER))]
+    listener: String,
+}
+
+#[derive(Subcommand, Debug)]
+enum Commands {
+    /// Run the server
+    Serve,
+    /// Open a URL
+    Open(OpenArgs),
+}
+
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct OpenArgs {
+    /// The URL to open
+    url: String,
 }
 
 #[forbid(unsafe_code)]
-#[actix_web::main]
+#[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     env_logger::init_from_env(env_logger::Env::default().default_filter_or("info"));
-    let args = Args::parse();
 
-    match args.url {
-        Some(url) => client(&url, &args.listen).await,
-        None => server(&args).await,
-    }
-}
+    let args = CliArgs::parse();
+    let listener = args.listener;
+    let command = args.command.unwrap_or(Commands::Serve);
 
-async fn client(url: &str, listen: &str) -> Result<(), anyhow::Error> {
-    use reqwest::Client;
-
-    let url = Url::parse(url)?;
-    info!("Opening url: {}", url);
-
-    let server_url = Url::parse(&format!("http://{}/open", listen))?;
-
-    let res = Client::new()
-        .post(server_url)
-        .body(url.to_string())
-        .send()
-        .await?;
-
-    match res.status() {
-        StatusCode::OK => Ok(()),
-        _ => Err(anyhow!("Bad HTTP code: {}", res.status())),
-    }
-}
-
-async fn server(args: &Args) -> Result<(), anyhow::Error> {
-    use actix_web::{middleware::Logger, App, HttpServer};
-
-    info!("Listening on http://{}", args.listen);
-
-    HttpServer::new(|| App::new().wrap(Logger::default()).service(open))
-        .bind(&args.listen)?
-        .run()
-        .await?;
-
-    Ok(())
-}
-
-#[post("/open")]
-async fn open(url: String) -> impl Responder {
-    open_url(&url)
-        .await
-        .map(|_| HttpResponse::Ok().body(format!("Accepted url: {}\n", url)))
-        .unwrap_or_else(|error| HttpResponse::BadRequest().body(format!("Error: {}\n", error)))
-}
-
-async fn open_url(url: &str) -> Result<(), anyhow::Error> {
-    let url = Url::parse(url)?;
-
-    if cfg!(target_os = "windows") {
-        std::process::Command::new("cmd")
-            .args(["/C", "start", url.as_str()])
-            .output()?;
-    } else {
-        std::process::Command::new("xdg-open")
-            .args([url.as_str()])
-            .output()?;
+    match command {
+        Commands::Open(x) => {
+            let api_url = format!("http://{}/open", listener).parse()?;
+            rhcli::json_api::JsonApi::new(api_url)
+                .post(rhcli::open::OpenRequest::new(x.url.as_str()))
+                .await?;
+        }
+        Commands::Serve => {
+            axum::Server::bind(&listener.parse()?)
+                .serve(Router::new().route("/open", post(open)).into_make_service())
+                .await?;
+        }
     }
 
     Ok(())
+}
+
+async fn open(Json(req): Json<rhcli::open::OpenRequest>) -> impl IntoResponse {
+    match rhcli::open::open(&req).await {
+        Ok(x) => (StatusCode::OK, Json(x)).into_response(),
+        Err(_) => (StatusCode::BAD_REQUEST).into_response(),
+    }
 }

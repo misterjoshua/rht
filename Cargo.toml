@@ -1,13 +1,21 @@
 [package]
-name = "nc-url-opener"
-version = "0.3.0"
+name = "rhcli"
+version = "0.4.0"
 edition = "2021"
 
 [dependencies]
-actix-web = "4"
 anyhow = "1"
+async-trait = "0.1"
+axum = "0.5"
+axum-macros = "0.2"
 clap = { version = "4", features = ["derive"] }
 env_logger = "0.9"
+http = "0.2"
+hyper = { version = "0.14", features = ["full"] }
 log = "0.4"
-reqwest = { version = "0.11", features = ["rustls-tls"], default-features = false }
+reqwest = { version = "0.11", features = ["rustls-tls", "json"], default-features = false }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+tower = "0.4"
 url = "2"
