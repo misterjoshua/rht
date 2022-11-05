@@ -1,6 +1,6 @@
-# Remote Host Companion CLI
+# Remote Host Tools
 
-Remote Host Companion Cli (rhcc)
+Remote Host Tools (rht)
 
 ## Usage
 
@@ -25,7 +25,3 @@ server$ BROWSER=rhc xdg-open https://www.example.com
 # Alternatively, connect directly to the server with this
 desktop$ ssh server -R 12345:127.0.0.1:12345 -t BROWSER=rhc bash
 ```
-
-## Architecture
-
-![Architecture Diagram](docs/architecture.excalidraw.png)
