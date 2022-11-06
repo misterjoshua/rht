@@ -18,7 +18,7 @@ impl<T: Serialize, U: DeserializeOwned> JsonApi<T, U> {
         }
     }
 
-    pub async fn post(&self, req: T) -> Result<U, anyhow::Error> {
+    pub async fn post(&self, req: T) -> anyhow::Result<U> {
         use reqwest::Client;
 
         let res = Client::new()

@@ -39,7 +39,7 @@ enum Commands {
 
 #[forbid(unsafe_code)]
 #[tokio::main]
-async fn main() -> Result<(), anyhow::Error> {
+async fn main() -> anyhow::Result<()> {
     env_logger::init_from_env(env_logger::Env::default().default_filter_or("info"));
 
     let args = Args::parse();
@@ -69,7 +69,7 @@ impl<'a> OpenService<'_> {
         })
     }
 
-    pub async fn send(&self, url: String) -> Result<(), anyhow::Error> {
+    pub async fn send(&self, url: String) -> anyhow::Result<()> {
         let req = rht::open::OpenRequest::from_user_input(url)?;
         self.api.post(req).await?;
         Ok(())
@@ -81,7 +81,7 @@ impl AxumConfig for OpenService<'_> {
         async fn open_service(Json(req): Json<rht::open::OpenRequest>) -> impl IntoResponse {
             match rht::open::open(&req).await {
                 Ok(x) => (StatusCode::OK, Json(x)).into_response(),
-                Err(_) => (StatusCode::BAD_REQUEST).into_response(),
+                Err(err) => (StatusCode::BAD_REQUEST, Json(err)).into_response(),
             }
         }
 
