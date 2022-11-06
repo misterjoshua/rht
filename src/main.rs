@@ -1,7 +1,10 @@
 mod rht;
 
+use std::{path::Path};
+
 use axum::{extract::Json, http::StatusCode, response::IntoResponse, routing::post, Router};
 use clap::{Parser, Subcommand};
+use log::info;
 
 /// The default listener address
 const LISTENER: &str = "127.0.0.1:12345";
@@ -44,14 +47,28 @@ async fn main() -> Result<(), anyhow::Error> {
 
     match command {
         Commands::Open(x) => {
+            let local_path = Path::new(&x.url);
+            let url = if local_path.is_file() {
+                info!("Reading local file: {}", x.url);
+                let bytes = std::fs::read(local_path)?;
+                let contents = base64::encode(bytes);
+
+                format!("data:application/octet-stream;base64,{}", base64::encode(contents))
+            } else {
+                x.url
+            };
+
             let api_url = format!("http://{}/open", listener).parse()?;
             rht::json_api::JsonApi::new(api_url)
-                .post(rht::open::OpenRequest::new(x.url.as_str()))
+                .post(rht::open::OpenRequest::url(url.as_str()))
                 .await?;
         }
         Commands::Serve => {
             axum::Server::bind(&listener.parse()?)
-                .serve(Router::new().route("/open", post(open)).into_make_service())
+                .http1_max_buf_size(100*1024*1024)
+                .http2_max_frame_size(100*1024*1024)
+                .serve(Router::new()
+                    .route("/open", post(open)).into_make_service())
                 .await?;
         }
     }

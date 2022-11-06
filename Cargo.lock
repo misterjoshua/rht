@@ -670,6 +670,7 @@ dependencies = [
  "async-trait",
  "axum",
  "axum-macros",
+ "base64",
  "clap",
  "env_logger",
  "http",

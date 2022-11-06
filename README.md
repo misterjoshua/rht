@@ -17,8 +17,8 @@ desktop$ ssh server -R 12345:127.0.0.1:12345
 server$ rhc open https://www.example.com
 
 # Configure your BROWSER env var and use xdg-open
-server$ BROWSER=rhc xdg-open https://www.example.com
+server$ BROWSER="rhc open" xdg-open https://www.example.com
 
 # Alternatively, connect directly to the server with this
-desktop$ ssh server -R 12345:127.0.0.1:12345 -t BROWSER=rhc bash
+desktop$ ssh server -R 12345:127.0.0.1:12345 -t BROWSER="rhc open" bash
 ```

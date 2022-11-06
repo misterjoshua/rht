@@ -9,7 +9,7 @@ pub struct OpenRequest {
 }
 
 impl OpenRequest {
-    pub fn new(url: &str) -> Self {
+    pub fn url(url: &str) -> Self {
         OpenRequest {
             url: String::from(url),
         }
