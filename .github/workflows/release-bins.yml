@@ -41,14 +41,10 @@ jobs:
         target: ${{ matrix.platform.target }}
         components: clippy
 
-    - name: Install cross
-      run: cargo install cross
+    - run: cargo install cros
+    - run: cross build --release --target ${{ matrix.platform.target }}
 
-    - name: Build ${{ matrix.platform.target }}
-      run: cross build --release --target ${{ matrix.platform.target }}
-
-    - name: Upload ${{ matrix.platform.target }}
-      uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.platform.target }}
         path: target/${{ matrix.platform.target }}/release/${{ matrix.platform.binary }}
@@ -64,11 +60,9 @@ jobs:
 
       - name: Download artifacts
         uses: actions/download-artifact@v3
-        with:
-          path: tmp
+        with: { path: tmp }
 
-      - name: Stage release files
-        run: |
+      - run: |
           mkdir -p release
           mv tmp/* release/
           tree release
