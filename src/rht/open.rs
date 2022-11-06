@@ -1,4 +1,5 @@
 use log::info;
+use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use std::{fmt::Debug, path::Path};
 use url::Url;
@@ -63,43 +64,28 @@ async fn open_url(req: &OpenUrlRequest) -> Result<OpenResponse, OpenError> {
 
     let scheme = url.scheme();
     if scheme.eq("ext+granted-containers") {
-        std::process::Command::new("C:\\Program Files\\Mozilla Firefox\\firefox.exe")
-            .args([url.as_str()])
-            .output()?;
-
-        return Ok(OpenResponse);
-    }
-
-    if scheme.eq("http") || scheme.eq("https") {
-        return platform_start(&req.url).await;
-    }
-
-    Err(OpenError::UnsupportedScheme)
-}
-
-async fn open_file(file: &OpenFileRequest) -> Result<OpenResponse, OpenError> {
-    info!("Opening file: {}", file.name);
-
-    let temp_dir = tempfile::tempdir()?;
-    let temp_file = temp_dir.path().join(&file.name);
-
-    std::fs::write(&temp_file, base64::decode(&file.content)?)?;
-
-    platform_start(&String::from(temp_file.clone().to_string_lossy())).await
-}
-
-async fn platform_start(local: &String) -> Result<OpenResponse, OpenError> {
-    info!("Using platform start action: {}", local);
-
-    if cfg!(target_os = "windows") {
-        std::process::Command::new("cmd")
-            .args(["/C", "start", local])
-            .output()?;
+        open::with(url.as_str(), "firefox")?;
+        Ok(OpenResponse)
+    } else if scheme.eq("http") || scheme.eq("https") {
+        open::that(&req.url)?;
+        Ok(OpenResponse)
     } else {
-        std::process::Command::new("xdg-open")
-            .args([local])
-            .output()?;
+        Err(OpenError::UnsupportedScheme)
     }
+}
+
+async fn open_file(req: &OpenFileRequest) -> Result<OpenResponse, OpenError> {
+    info!("Opening file: {}", req.name);
+
+    let dir = std::env::temp_dir().join(format!(".tmp.{}", rand::thread_rng().next_u32()));
+    std::fs::create_dir_all(&dir)?;
+    let file = dir.join(&req.name);
+    let path = file.as_path();
+
+    std::fs::write(&file, base64::decode(&req.content)?)?;
+
+    info!("Local file path: {:?}", path);
+    open::that(path)?;
 
     Ok(OpenResponse)
 }
