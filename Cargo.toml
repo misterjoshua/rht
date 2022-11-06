@@ -4,6 +4,9 @@ version = "0.0.0-alpha.0"
 authors = ["misterjoshua"]
 edition = "2021"
 description = "Remote Host Toolkit"
+documentation = "https://github.com/misterjoshua/rht"
+homepage = "https://github.com/misterjoshua/rht"
+repository = "https://github.com/misterjoshua/rht.git"
 license = "MIT"
 
 [dependencies]
