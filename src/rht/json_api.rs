@@ -29,7 +29,13 @@ impl<T: Serialize, U: DeserializeOwned> JsonApi<T, U> {
 
         let res = match res.status() {
             reqwest::StatusCode::OK => res,
-            _ => return Err(anyhow!("Bad HTTP code: {}", res.status())),
+            _ => {
+                return Err(anyhow!(
+                    "Request Failed: {}\n{}",
+                    res.status(),
+                    res.text().await?
+                ))
+            }
         };
 
         match res.json::<U>().await {

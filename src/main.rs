@@ -1,6 +1,12 @@
 mod rht;
 
-use axum::{extract::Json, http::StatusCode, response::IntoResponse, routing::post, Router};
+use axum::{
+    extract::{DefaultBodyLimit, Json},
+    http::StatusCode,
+    response::IntoResponse,
+    routing::post,
+    Router,
+};
 use clap::{Parser, Subcommand};
 
 /// The default listener address
@@ -44,14 +50,17 @@ async fn main() -> Result<(), anyhow::Error> {
 
     match command {
         Commands::Open(x) => {
+            let req = rht::open::OpenRequest::from_user_input(x.url)?;
             let api_url = format!("http://{}/open", listener).parse()?;
-            rht::json_api::JsonApi::new(api_url)
-                .post(rht::open::OpenRequest::new(x.url.as_str()))
-                .await?;
+            rht::json_api::JsonApi::new(api_url).post(req).await?;
         }
         Commands::Serve => {
+            let app = Router::new()
+                .route("/open", post(open))
+                .layer(DefaultBodyLimit::disable());
+
             axum::Server::bind(&listener.parse()?)
-                .serve(Router::new().route("/open", post(open)).into_make_service())
+                .serve(app.into_make_service())
                 .await?;
         }
     }
