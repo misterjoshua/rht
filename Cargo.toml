@@ -1,6 +1,6 @@
 [package]
 name = "rht"
-version = "0.0.0-alpha.4"
+version = "0.0.0-alpha.5"
 authors = ["misterjoshua"]
 edition = "2021"
 description = "Remote Host Toolkit"
