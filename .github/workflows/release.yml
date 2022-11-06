@@ -41,4 +41,7 @@ jobs:
 
     - uses: dtolnay/rust-toolchain@stable
     - run: cargo install cargo-release
-    - run: cargo release ${{ inputs.releaseLevel }} --no-confirm --execute
+    - run: |
+        git config --global user.email "joshkellendonk@gmail.com"
+        git config --global user.name "Josh Kellendonk"
+        cargo release ${{ inputs.releaseLevel }} --no-confirm --execute
