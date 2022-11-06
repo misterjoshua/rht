@@ -1,0 +1,80 @@
+name: Release Bins
+
+on:
+  workflow_dispatch: {}
+  push: { tags: [v*] }
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        # Targets: https://doc.rust-lang.org/nightly/rustc/platform-support.html
+        platform:
+#          - { os: macos, target: x86_64-apple-darwin, binary: rht }
+#          - { os: macos, target: aarch64-apple-darwin, binary: rht }
+          - { os: ubuntu, target: aarch64-unknown-linux-gnu, binary: rht }
+          - { os: ubuntu, target: aarch64-unknown-linux-musl, binary: rht }
+          - { os: ubuntu, target: x86_64-unknown-linux-gnu, binary: rht }
+          - { os: ubuntu, target: x86_64-unknown-linux-musl, binary: rht }
+          - { os: windows, target: x86_64-pc-windows-gnu, binary: rht.exe }
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.platform.target }}
+
+    - name: Install toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        target: ${{ matrix.platform.target }}
+        components: clippy
+
+    - name: Install cross
+      run: cargo install cross
+
+    - name: Build ${{ matrix.platform.target }}
+      run: cross build --release --target ${{ matrix.platform.target }}
+
+    - name: Package zip
+      run: (cd target/${{ matrix.platform.target }}/release && zip - ${{ matrix.platform.binary }}) >rht-${{ matrix.platform.target }}.zip
+
+    - name: Upload zip
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.platform.target }}
+        path: rht-${{ matrix.platform.target }}.zip
+        retention-days: 10
+
+  publish:
+    needs: [build]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: tmp
+
+      - name: Stage artifacts
+        run: |
+          mkdir -p html/downloads
+          mv tmp/*/*.zip html/downloads/
+
+      - uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: html/downloads/*
