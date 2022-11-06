@@ -4,7 +4,7 @@ use axum::{
     extract::{DefaultBodyLimit, Json},
     http::StatusCode,
     response::IntoResponse,
-    routing::post,
+    routing::{post, MethodRouter},
     Router,
 };
 use clap::{Parser, Subcommand};
@@ -15,7 +15,7 @@ const LISTENER: &str = "127.0.0.1:12345";
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 #[command(propagate_version = true)]
-struct CliArgs {
+struct Args {
     #[command(subcommand)]
     command: Option<Commands>,
 
@@ -29,14 +29,10 @@ enum Commands {
     /// Run the server
     Serve,
     /// Open a URL
-    Open(OpenArgs),
-}
-
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-struct OpenArgs {
-    /// The URL to open
-    url: String,
+    Open {
+        /// The URL to open
+        url: String,
+    },
 }
 
 #[forbid(unsafe_code)]
@@ -44,33 +40,58 @@ struct OpenArgs {
 async fn main() -> Result<(), anyhow::Error> {
     env_logger::init_from_env(env_logger::Env::default().default_filter_or("info"));
 
-    let args = CliArgs::parse();
-    let listener = args.listener;
-    let command = args.command.unwrap_or(Commands::Serve);
+    let args = Args::parse();
+    let open = OpenService::create(&args.listener, "/open")?;
 
-    match command {
-        Commands::Open(x) => {
-            let req = rht::open::OpenRequest::from_user_input(x.url)?;
-            let api_url = format!("http://{}/open", listener).parse()?;
-            rht::json_api::JsonApi::new(api_url).post(req).await?;
-        }
+    match args.command.unwrap_or(Commands::Serve) {
+        Commands::Open { url } => open.send(url).await,
         Commands::Serve => {
             let app = Router::new()
-                .route("/open", post(open))
+                .route(open.path(), open.router())
                 .layer(DefaultBodyLimit::disable());
 
-            axum::Server::bind(&listener.parse()?)
+            axum::Server::bind(&args.listener.parse()?)
                 .serve(app.into_make_service())
                 .await?;
+
+            Ok(())
         }
     }
-
-    Ok(())
 }
 
-async fn open(Json(req): Json<rht::open::OpenRequest>) -> impl IntoResponse {
-    match rht::open::open(&req).await {
-        Ok(x) => (StatusCode::OK, Json(x)).into_response(),
-        Err(_) => (StatusCode::BAD_REQUEST).into_response(),
+struct OpenService<'a> {
+    api: rht::json_api::JsonApi<rht::open::OpenRequest, rht::open::OpenResponse>,
+    path: &'a str,
+}
+
+impl<'a> OpenService<'_> {
+    pub fn create(listener: &'a str, path: &'a str) -> Result<OpenService<'a>, anyhow::Error> {
+        let url = format!("http://{}{}", listener, path).parse()?;
+
+        Ok(OpenService {
+            api: rht::json_api::JsonApi::new(url),
+            path,
+        })
+    }
+
+    pub fn path(&self) -> &'_ str {
+        self.path
+    }
+
+    pub fn router(&self) -> MethodRouter {
+        async fn open_service(Json(req): Json<rht::open::OpenRequest>) -> impl IntoResponse {
+            match rht::open::open(&req).await {
+                Ok(x) => (StatusCode::OK, Json(x)).into_response(),
+                Err(_) => (StatusCode::BAD_REQUEST).into_response(),
+            }
+        }
+
+        post(open_service)
+    }
+
+    pub async fn send(&self, url: String) -> Result<(), anyhow::Error> {
+        let req = rht::open::OpenRequest::from_user_input(url)?;
+        self.api.post(req).await?;
+        Ok(())
     }
 }
