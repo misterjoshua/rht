@@ -12,8 +12,8 @@ jobs:
       matrix:
         # Targets: https://doc.rust-lang.org/nightly/rustc/platform-support.html
         platform:
-          - { os: macos, target: x86_64-apple-darwin, binary: rht }
-          - { os: macos, target: aarch64-apple-darwin, binary: rht }
+#          - { os: macos, target: x86_64-apple-darwin, binary: rht }
+#          - { os: macos, target: aarch64-apple-darwin, binary: rht }
           - { os: ubuntu, target: aarch64-unknown-linux-gnu, binary: rht }
           - { os: ubuntu, target: aarch64-unknown-linux-musl, binary: rht }
           - { os: ubuntu, target: x86_64-unknown-linux-gnu, binary: rht }
