@@ -2,6 +2,7 @@ name: Release
 
 on:
   workflow_dispatch: {}
+  push: { tags: [v*] }
 
 env:
   CARGO_TERM_COLOR: always
@@ -72,15 +73,8 @@ jobs:
         run: |
           mkdir -p html/downloads
           mv tmp/*/*.zip html/downloads/
-          find html/downloads -type f | sed -re 's#html/(.*)#<a href="\1">\1</a><br />#' >html/index.html
 
       - uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          name: ${{ github.ref }}
           files: html/downloads/*
-          draft: true
-
-#      - name: Deploy
-#        uses: JamesIves/github-pages-deploy-action@v4
-#        with:
-#          folder: html
