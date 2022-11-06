@@ -39,11 +39,6 @@ jobs:
           target
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.platform.target }}
 
-    - name: Install toolchain
-      uses: dtolnay/rust-toolchain@stable
-
-    - name: Install cross
-      run: cargo install cargo-release
-
-    - name: Build ${{ matrix.platform.target }}
-      run: cargo release ${{ inputs.level }} --no-confirm --execute
+    - uses: dtolnay/rust-toolchain@stable
+    - run: cargo install cargo-release
+    - run: cargo release ${{ inputs.releaseLevel }} --no-confirm --execute
