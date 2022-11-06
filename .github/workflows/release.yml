@@ -74,7 +74,13 @@ jobs:
           mv tmp/*/*.zip html/downloads/
           find html/downloads -type f | sed -re 's#html/(.*)#<a href="\1">\1</a><br />#' >html/index.html
 
-      - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@v4
+      - uses: softprops/action-gh-release@v1
         with:
-          folder: html
+          name: ${{ github.ref }}
+          files: html/downloads/*
+          draft: true
+
+#      - name: Deploy
+#        uses: JamesIves/github-pages-deploy-action@v4
+#        with:
+#          folder: html
