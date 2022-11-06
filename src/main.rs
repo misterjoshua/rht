@@ -1,13 +1,15 @@
 mod rht;
 
+use crate::rht::serve::AxumConfig;
 use axum::{
     extract::{DefaultBodyLimit, Json},
     http::StatusCode,
     response::IntoResponse,
-    routing::{post, MethodRouter},
+    routing::post,
     Router,
 };
 use clap::{Parser, Subcommand};
+use hyper::Body;
 
 /// The default listener address
 const LISTENER: &str = "127.0.0.1:12345";
@@ -41,21 +43,14 @@ async fn main() -> Result<(), anyhow::Error> {
     env_logger::init_from_env(env_logger::Env::default().default_filter_or("info"));
 
     let args = Args::parse();
+
     let open = OpenService::create(&args.listener, "/open")?;
+
+    let serve = rht::serve::ServeService::new(&args.listener, vec![&open])?;
 
     match args.command.unwrap_or(Commands::Serve) {
         Commands::Open { url } => open.send(url).await,
-        Commands::Serve => {
-            let app = Router::new()
-                .route(open.path(), open.router())
-                .layer(DefaultBodyLimit::disable());
-
-            axum::Server::bind(&args.listener.parse()?)
-                .serve(app.into_make_service())
-                .await?;
-
-            Ok(())
-        }
+        Commands::Serve => serve.serve().await,
     }
 }
 
@@ -74,11 +69,15 @@ impl<'a> OpenService<'_> {
         })
     }
 
-    pub fn path(&self) -> &'_ str {
-        self.path
+    pub async fn send(&self, url: String) -> Result<(), anyhow::Error> {
+        let req = rht::open::OpenRequest::from_user_input(url)?;
+        self.api.post(req).await?;
+        Ok(())
     }
+}
 
-    pub fn router(&self) -> MethodRouter {
+impl AxumConfig for OpenService<'_> {
+    fn config(&self, app: Router<Body>) -> Router<Body> {
         async fn open_service(Json(req): Json<rht::open::OpenRequest>) -> impl IntoResponse {
             match rht::open::open(&req).await {
                 Ok(x) => (StatusCode::OK, Json(x)).into_response(),
@@ -86,12 +85,7 @@ impl<'a> OpenService<'_> {
             }
         }
 
-        post(open_service)
-    }
-
-    pub async fn send(&self, url: String) -> Result<(), anyhow::Error> {
-        let req = rht::open::OpenRequest::from_user_input(url)?;
-        self.api.post(req).await?;
-        Ok(())
+        app.route(self.path, post(open_service))
+            .layer(DefaultBodyLimit::disable())
     }
 }
