@@ -41,7 +41,7 @@ jobs:
         target: ${{ matrix.platform.target }}
         components: clippy
 
-    - run: cargo install cros
+    - run: cargo install cross
     - run: cross build --release --target ${{ matrix.platform.target }}
 
     - uses: actions/upload-artifact@v3
