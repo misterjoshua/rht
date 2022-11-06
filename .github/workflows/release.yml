@@ -6,6 +6,7 @@ on:
       releaseLevel:
           type: choice
           required: true
+          default: alpha
           options:
             - major
             - minor
