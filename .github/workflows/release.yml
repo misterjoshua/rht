@@ -41,9 +41,6 @@ jobs:
 
     - name: Install toolchain
       uses: dtolnay/rust-toolchain@stable
-      with:
-        target: ${{ matrix.platform.target }}
-        components: clippy
 
     - name: Install cross
       run: cargo install cargo-release
