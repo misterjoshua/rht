@@ -31,19 +31,16 @@ jobs:
           target
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.platform.target }}
 
-    - name: Install latest nightly
-      uses: actions-rs/toolchain@v1
+    - name: Install toolchain
+      uses: dtolnay/rust-toolchain@stable
       with:
-          toolchain: nightly
-          override: true
-          components: rustfmt, clippy
+        components: clippy
 
-    - name: Build platform
-      uses: actions-rs/cargo@v1
-      with:
-        use-cross: true
-        command: build
-        args: --release --target ${{ matrix.platform.target }}
+    - name: Install cross
+      run: cargo install cross
+
+    - name: Build ${{ matrix.platform.target }}
+      run: cross build --release --target ${{ matrix.platform.target }}
 
     - name: Package zip
       run: (cd target/${{ matrix.platform.target }}/release && zip - ${{ matrix.platform.binary }}) >rht-${{ matrix.platform.target }}.zip
