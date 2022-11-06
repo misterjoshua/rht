@@ -39,8 +39,11 @@ jobs:
         target: ${{ matrix.platform.target }}
         components: clippy
 
+    - name: Install cross
+      run: cargo install cross
+
     - name: Build ${{ matrix.platform.target }}
-      run: cargo build --release --target ${{ matrix.platform.target }}
+      run: cross build --release --target ${{ matrix.platform.target }}
 
     - name: Package zip
       run: (cd target/${{ matrix.platform.target }}/release && zip - ${{ matrix.platform.binary }}) >rht-${{ matrix.platform.target }}.zip
