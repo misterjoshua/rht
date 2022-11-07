@@ -44,6 +44,16 @@ jobs:
     - run: cargo install cross
     - run: cross build --release --target ${{ matrix.platform.target }}
 
+    - name: Package zip
+      run: (cd target/${{ matrix.platform.target }}/release && zip - ${{ matrix.platform.binary }}) >rht-${{ matrix.platform.target }}.zip
+
+    - name: Upload zip
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.platform.target }}
+        path: rht-${{ matrix.platform.target }}.zip
+        retention-days: 1
+
     - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.platform.target }}
@@ -62,10 +72,10 @@ jobs:
         uses: actions/download-artifact@v3
         with: { path: tmp }
 
-      - run: |
+      - name: Stage artifacts
+        run: |
           mkdir -p release
-          mv tmp/* release/
-          tree release
+          mv tmp/*/*.zip release/
 
       - uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
