@@ -14,11 +14,11 @@ Now, connect to another host and open a browser remotely:
 desktop$ ssh server -R 12345:127.0.0.1:12345
 
 # Use the binary to open the url on your desktop; or
-server$ rhc open https://www.example.com
+server$ rht open https://www.example.com
 
 # Configure your BROWSER env var and use xdg-open
-server$ BROWSER="rhc open" xdg-open https://www.example.com
+server$ BROWSER="rht open" xdg-open https://www.example.com
 
 # Alternatively, connect directly to the server with this
-desktop$ ssh server -R 12345:127.0.0.1:12345 -t BROWSER="rhc open" bash
+desktop$ ssh server -R 12345:127.0.0.1:12345 -t BROWSER="rht open" bash
 ```

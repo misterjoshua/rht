@@ -1,5 +1,6 @@
 use axum::Router;
 use hyper::Body;
+use log::info;
 use std::net::SocketAddr;
 
 pub struct ServeService<'a> {
@@ -23,6 +24,8 @@ impl<'a> ServeService<'_> {
             .config
             .iter()
             .fold(Router::new(), |app, config| config.config(app));
+
+        info!("Starting server");
 
         axum::Server::bind(&self.listener)
             .serve(app.into_make_service())

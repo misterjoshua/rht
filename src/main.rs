@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 mod rht;
 
 use crate::rht::serve::AxumConfig;
