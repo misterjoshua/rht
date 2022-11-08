@@ -1,4 +1,4 @@
-name: Upgrade
+name: Update
 
 on:
   workflow_dispatch: {}
@@ -27,10 +27,10 @@ jobs:
     - uses: dtolnay/rust-toolchain@stable
       with: { components: clippy }
 
-    - run: cargo upgrade
+    - run: cargo update
     - run: cargo build
     - run: cargo test
 
     - uses: peter-evans/create-pull-request@v3
       with:
-        title: "chore: upgrade dependencies"
+        title: "chore: update dependencies"
