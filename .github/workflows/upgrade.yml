@@ -33,4 +33,4 @@ jobs:
 
     - uses: peter-evans/create-pull-request@v3
       with:
-        title: "chore: upgrade dependencies""
+        title: "chore: upgrade dependencies"
