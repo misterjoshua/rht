@@ -9,7 +9,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  update:
 
     runs-on: ubuntu-latest
 
@@ -33,4 +33,11 @@ jobs:
 
     - uses: peter-evans/create-pull-request@v3
       with:
+        labels: auto-approve
         title: "chore: update dependencies"
+        commit-message: |-
+          chore(deps): upgrade dependencies
+          
+          Upgrades project dependencies. See details in [workflow run].
+          
+          [Workflow Run]: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
